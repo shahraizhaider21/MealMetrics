@@ -1,0 +1,142 @@
+import React, { useState } from 'react';
+import axios from 'axios';
+import { X } from 'lucide-react';
+
+interface AddMealModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onMealAdded: () => void;
+    defaultDate?: Date;
+}
+
+const AddMealModal: React.FC<AddMealModalProps> = ({ isOpen, onClose, onMealAdded, defaultDate }) => {
+    const [formData, setFormData] = useState({
+        name: '',
+        calories: 0,
+        price: 0,
+        protein: 0,
+        carbs: 0,
+        fat: 0
+    });
+    const [error, setError] = useState('');
+
+    if (!isOpen) return null;
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.type === 'number' ? Number(e.target.value) : e.target.value });
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const mealDate = defaultDate ? new Date(defaultDate) : new Date();
+            // If defaultDate is provided, we want to preserve that specific date (e.g., Monday of this week)
+            // But we might want to set the time to current time or keep it as start of day?
+            // Let's keep the time as current time but on that specific date if possible, or just use the date object as is.
+            // If defaultDate is passed, it's likely 00:00:00 of that day. Let's add current time to it to avoid timezone weirdness if we just use ISO string of 00:00.
+            // Actually, for simplicity, let's just use the passed date.
+
+            await axios.post('http://localhost:5000/api/meals', {
+                ...formData,
+                date: mealDate.toISOString()
+            });
+            onMealAdded();
+            onClose();
+            setFormData({ name: '', calories: 0, price: 0, protein: 0, carbs: 0, fat: 0 }); // Reset form
+        } catch (err: any) {
+            setError(err.response?.data?.msg || 'Failed to add meal');
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
+                <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
+                    <X size={24} />
+                </button>
+                <h2 className="text-2xl font-bold mb-4 text-gray-800">Add New Meal</h2>
+                {error && <p className="text-red-500 mb-4">{error}</p>}
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="block text-gray-700 mb-1">Meal Name</label>
+                        <input
+                            type="text"
+                            name="name"
+                            className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                            value={formData.name}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-gray-700 mb-1">Calories</label>
+                            <input
+                                type="number"
+                                name="calories"
+                                className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                                value={formData.calories}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-gray-700 mb-1">Price ($)</label>
+                            <input
+                                type="number"
+                                name="price"
+                                className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                                value={formData.price}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                        <div>
+                            <label className="block text-gray-700 mb-1">Protein (g)</label>
+                            <input
+                                type="number"
+                                name="protein"
+                                className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                                value={formData.protein}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-gray-700 mb-1">Carbs (g)</label>
+                            <input
+                                type="number"
+                                name="carbs"
+                                className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                                value={formData.carbs}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-gray-700 mb-1">Fat (g)</label>
+                            <input
+                                type="number"
+                                name="fat"
+                                className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                                value={formData.fat}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                    </div>
+                    <button
+                        type="submit"
+                        className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
+                    >
+                        Add Meal
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+export default AddMealModal;
