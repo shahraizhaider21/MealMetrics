@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useState, useEffect, type ReactNode } from 'react';
 import axios from 'axios';
 
 interface User {
@@ -18,6 +18,8 @@ interface User {
         bmi: number;
         bmiCategory: string;
     };
+    waterLogs?: { date: string; amount: number }[];
+    waterIntake?: number;
 }
 
 interface AuthContextType {

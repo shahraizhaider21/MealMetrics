@@ -1,10 +1,11 @@
-import React, { useState, useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
+import React, { useState } from 'react';
+// import { AuthContext } from '../context/AuthContext';
 import axios from 'axios';
 import { PlusCircle } from 'lucide-react';
+import API_URL from '../api';
 
 const MealPlanner = () => {
-    const auth = useContext(AuthContext);
+    // const auth = useContext(AuthContext);
     const [formData, setFormData] = useState({
         name: '',
         calories: 0,
@@ -19,7 +20,7 @@ const MealPlanner = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:5000/api/meals', formData);
+            await axios.post(`${API_URL}/api/meals`, formData);
             setMessage('Meal added successfully!');
             setFormData({
                 name: '',

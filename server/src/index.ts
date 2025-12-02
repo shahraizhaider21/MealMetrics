@@ -13,7 +13,10 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+app.use(cors({
+    origin: '*', // Allow all origins for now, or specify Vercel URL later
+    credentials: true
+}));
 app.use(express.json());
 
 // Routes

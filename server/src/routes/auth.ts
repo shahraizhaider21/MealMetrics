@@ -2,6 +2,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
+import { calculateNutritionGoals } from '../utils/nutrition';
 
 const router = express.Router();
 
@@ -39,10 +40,6 @@ router.post('/register', async (req, res) => {
     }
 });
 
-import { calculateNutritionGoals } from '../utils/nutrition';
-
-// ... (existing code)
-
 // Login
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
@@ -74,6 +71,8 @@ router.post('/login', async (req, res) => {
                     weight: user.weight,
                     gender: user.gender,
                     activityLevel: user.activityLevel,
+                    waterLogs: user.waterLogs,
+                    waterIntake: user.waterIntake,
                     goals
                 }
             });
@@ -111,9 +110,48 @@ router.put('/profile', async (req, res) => {
                 weight: user.weight,
                 gender: user.gender,
                 activityLevel: user.activityLevel,
+                waterLogs: user.waterLogs,
+                waterIntake: user.waterIntake,
                 goals
             }
         });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+});
+
+// Update Water Intake
+router.put('/water', async (req, res) => {
+    const { userId, date, amount } = req.body;
+    try {
+        let user = await User.findById(userId);
+        if (!user) return res.status(404).json({ msg: 'User not found' });
+
+        const targetDate = new Date(date);
+        targetDate.setHours(0, 0, 0, 0);
+
+        // Ensure waterLogs is initialized
+        if (!user.waterLogs) {
+            user.waterLogs = [];
+        }
+
+        const existingLogIndex = user.waterLogs.findIndex(log => {
+            const logDate = new Date(log.date);
+            logDate.setHours(0, 0, 0, 0);
+            return logDate.getTime() === targetDate.getTime();
+        });
+
+        if (existingLogIndex > -1) {
+            user.waterLogs[existingLogIndex].amount = amount;
+        } else {
+            user.waterLogs.push({ date: targetDate, amount });
+        }
+
+        user.waterIntake = amount; // Update the simple field as well
+
+        await user.save();
+        res.json({ waterLogs: user.waterLogs, waterIntake: user.waterIntake });
     } catch (err) {
         console.error(err);
         res.status(500).send('Server Error');

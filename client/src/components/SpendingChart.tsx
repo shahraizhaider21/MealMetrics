@@ -15,7 +15,7 @@ const SpendingChart: React.FC<SpendingChartProps> = ({ meals }) => {
     const processData = () => {
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const today = new Date();
-        const last7Days = [];
+        const last7Days: { date: string; dayName: string; amount: number }[] = [];
 
         for (let i = 6; i >= 0; i--) {
             const d = new Date();

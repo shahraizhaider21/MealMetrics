@@ -9,6 +9,8 @@ export interface IUser extends Document {
     weight: number;
     gender: 'male' | 'female';
     activityLevel: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
+    waterLogs: { date: Date; amount: number }[];
+    waterIntake: number;
 }
 
 const UserSchema: Schema = new Schema({
@@ -19,7 +21,12 @@ const UserSchema: Schema = new Schema({
     height: { type: Number, default: 175 }, // cm
     weight: { type: Number, default: 70 }, // kg
     gender: { type: String, enum: ['male', 'female'], default: 'male' },
-    activityLevel: { type: String, enum: ['sedentary', 'light', 'moderate', 'active', 'very_active'], default: 'moderate' }
+    activityLevel: { type: String, enum: ['sedentary', 'light', 'moderate', 'active', 'very_active'], default: 'moderate' },
+    waterLogs: [{
+        date: { type: Date, required: true },
+        amount: { type: Number, required: true }
+    }],
+    waterIntake: { type: Number, default: 0 }
 });
 
 export default mongoose.model<IUser>('User', UserSchema);

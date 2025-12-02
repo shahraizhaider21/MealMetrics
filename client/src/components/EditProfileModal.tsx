@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import axios from 'axios';
 import { X } from 'lucide-react';
+import API_URL from '../api';
 
 interface EditProfileModalProps {
     isOpen: boolean;
@@ -27,25 +28,12 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const res = await axios.put('http://localhost:5000/api/auth/profile', {
+            const res = await axios.put(`${API_URL}/api/auth/profile`, {
                 userId: user?.id,
                 ...formData
             });
 
-            // Update context with new user data
             if (auth?.login) {
-                // We need a way to update the user in context without full login, 
-                // but for now, we can just re-set the user data if the context supports it.
-                // Assuming AuthContext has a way to update user or we just manually update localStorage and reload?
-                // Let's try to update the local state if possible, or just reload the page for simplicity in this MVP.
-                // Better: The login function usually sets the user. Let's see if we can use that or if we need to expose a setUser.
-                // For this task, I'll assume we can just update the localStorage and reload, or better, just call login with the new token/user if returned?
-                // The API returns the updated user.
-
-                // Hack for MVP: Update localStorage and reload to refresh context
-                // Or better, if AuthContext exposes setUser, use it. 
-                // Since I can't see AuthContext right now, I'll assume I might need to reload or just handle it.
-                // Let's try to just reload for now to be safe and simple.
                 localStorage.setItem('user', JSON.stringify(res.data.user));
                 window.location.reload();
             }

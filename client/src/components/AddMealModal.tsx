@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { X } from 'lucide-react';
+import API_URL from '../api';
 
 interface AddMealModalProps {
     isOpen: boolean;
@@ -30,13 +31,8 @@ const AddMealModal: React.FC<AddMealModalProps> = ({ isOpen, onClose, onMealAdde
         e.preventDefault();
         try {
             const mealDate = defaultDate ? new Date(defaultDate) : new Date();
-            // If defaultDate is provided, we want to preserve that specific date (e.g., Monday of this week)
-            // But we might want to set the time to current time or keep it as start of day?
-            // Let's keep the time as current time but on that specific date if possible, or just use the date object as is.
-            // If defaultDate is passed, it's likely 00:00:00 of that day. Let's add current time to it to avoid timezone weirdness if we just use ISO string of 00:00.
-            // Actually, for simplicity, let's just use the passed date.
 
-            await axios.post('http://localhost:5000/api/meals', {
+            await axios.post(`${API_URL}/api/meals`, {
                 ...formData,
                 date: mealDate.toISOString()
             });
