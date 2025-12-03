@@ -53,7 +53,7 @@ const Analysis = () => {
         setMacroData([
             { name: 'Protein', value: totalMacros.protein, color: '#6366f1' }, // Indigo
             { name: 'Carbs', value: totalMacros.carbs, color: '#10b981' },   // Emerald
-            { name: 'Fat', value: totalMacros.fat, color: '#64748b' },       // Slate
+            { name: 'Fat', value: totalMacros.fat, color: '#f59e0b' },       // Amber
         ]);
 
         // 2. Calories vs Goal (Daily)
@@ -138,7 +138,7 @@ const Analysis = () => {
                         <div className="h-64">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={weeklyData} barSize={32}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                                     <XAxis
                                         dataKey="name"
                                         axisLine={false}
@@ -155,7 +155,7 @@ const Analysis = () => {
                                         cursor={{ fill: '#f8fafc', radius: 4 }}
                                         contentStyle={{ backgroundColor: '#fff', borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                                     />
-                                    <Bar dataKey="calories" name="Calories" fill="#0f172a" radius={[6, 6, 6, 6]} />
+                                    <Bar dataKey="calories" name="Calories" fill="#334155" radius={[6, 6, 6, 6]} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>

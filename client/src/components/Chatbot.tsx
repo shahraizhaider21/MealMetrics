@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
 import { MessageCircle, X, Send, Bot } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import API_URL from '../api';
 
 interface Message {
     id: number;
@@ -24,7 +26,7 @@ const Chatbot = () => {
         scrollToBottom();
     }, [messages, isOpen]);
 
-    const handleSend = (e?: React.FormEvent) => {
+    const handleSend = async (e?: React.FormEvent) => {
         e?.preventDefault();
         if (!input.trim()) return;
 
@@ -32,39 +34,26 @@ const Chatbot = () => {
         setMessages(prev => [...prev, userMsg]);
         setInput('');
 
-        // Simulate AI Delay
-        setTimeout(() => {
-            const botResponse = generateResponse(userMsg.text);
-            setMessages(prev => [...prev, { id: Date.now() + 1, text: botResponse, sender: 'bot' }]);
-        }, 600);
-    };
+        try {
+            // Add a temporary loading message
+            const loadingId = Date.now() + 1;
+            setMessages(prev => [...prev, { id: loadingId, text: "Thinking...", sender: 'bot' }]);
 
-    const generateResponse = (text: string): string => {
-        const lowerText = text.toLowerCase();
+            // Call AI API
+            console.log(`🔹 Sending Chat Request to: http://localhost:5000/api/ai/chat`, { message: userMsg.text });
+            const res = await axios.post('http://localhost:5000/api/ai/chat', {
+                message: userMsg.text,
+                stats: { note: "User is asking about nutrition." }
+            });
 
-        if (lowerText.includes('hello') || lowerText.includes('hi') || lowerText.includes('hey')) {
-            return "Hello there! Ready to plan some healthy meals?";
+            // Replace loading message with real response
+            setMessages(prev => prev.map(msg =>
+                msg.id === loadingId ? { ...msg, text: res.data.reply } : msg
+            ));
+        } catch (err) {
+            console.error("Chat Error", err);
+            setMessages(prev => [...prev, { id: Date.now() + 2, text: "Sorry, I'm having trouble connecting to my brain right now.", sender: 'bot' }]);
         }
-
-        if (lowerText.includes('hungry') || lowerText.includes('eat') || lowerText.includes('food') || lowerText.includes('dinner') || lowerText.includes('lunch')) {
-            const suggestions = [
-                "How about a Grilled Chicken Salad? It's high in protein and low in calories!",
-                "You could try a Quinoa Bowl with roasted veggies.",
-                "Salmon with asparagus is a great choice for today.",
-                "Check your dashboard! You have some budget left for a nice treat."
-            ];
-            return suggestions[Math.floor(Math.random() * suggestions.length)];
-        }
-
-        if (lowerText.includes('water') || lowerText.includes('drink') || lowerText.includes('thirsty')) {
-            return "Don't forget to log your water intake in the tracker! Stay hydrated!";
-        }
-
-        if (lowerText.includes('budget') || lowerText.includes('cost') || lowerText.includes('price')) {
-            return "You can track your spending on the dashboard. Try to stick to your monthly limit!";
-        }
-
-        return "I'm still learning! Try asking me about food, hunger, or your budget.";
     };
 
     return (
@@ -75,8 +64,7 @@ const Chatbot = () => {
                         initial={{ opacity: 0, y: 20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        className="fixed bottom-24 right-6 w-96 bg-white/80 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col"
-                        style={{ height: '500px' }}
+                        className="fixed bottom-24 right-6 w-96 bg-white/80 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl z-40 overflow-hidden flex flex-col max-h-[60vh]"
                     >
                         {/* Header */}
                         <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white/50">

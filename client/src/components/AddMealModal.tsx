@@ -21,10 +21,34 @@ const AddMealModal: React.FC<AddMealModalProps> = ({ isOpen, onClose, onMealAdde
     });
     const [error, setError] = useState('');
 
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+
     if (!isOpen) return null;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.type === 'number' ? Number(e.target.value) : e.target.value });
+    };
+
+    const handleAutoFill = async () => {
+        if (!formData.name) return;
+        setIsAnalyzing(true);
+        try {
+            const res = await axios.post('http://localhost:5000/api/ai/analyze', { mealName: formData.name });
+            const { calories, price, protein, carbs, fat } = res.data;
+            setFormData(prev => ({
+                ...prev,
+                calories: calories || 0,
+                price: price || 0,
+                protein: protein || 0,
+                carbs: carbs || 0,
+                fat: fat || 0
+            }));
+        } catch (err) {
+            console.error("AI Analyze Failed", err);
+            setError("Failed to analyze meal. Please try again.");
+        } finally {
+            setIsAnalyzing(false);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -55,14 +79,25 @@ const AddMealModal: React.FC<AddMealModalProps> = ({ isOpen, onClose, onMealAdde
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <label className="block text-gray-700 mb-1">Meal Name</label>
-                        <input
-                            type="text"
-                            name="name"
-                            className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-                            value={formData.name}
-                            onChange={handleChange}
-                            required
-                        />
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                name="name"
+                                className="flex-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                                value={formData.name}
+                                onChange={handleChange}
+                                required
+                                placeholder="e.g. Chicken Salad"
+                            />
+                            <button
+                                type="button"
+                                onClick={handleAutoFill}
+                                disabled={!formData.name || isAnalyzing}
+                                className="px-3 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium whitespace-nowrap shadow-sm"
+                            >
+                                {isAnalyzing ? 'Thinking...' : '✨ Auto-Fill'}
+                            </button>
+                        </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
@@ -125,7 +160,7 @@ const AddMealModal: React.FC<AddMealModalProps> = ({ isOpen, onClose, onMealAdde
                     </div>
                     <button
                         type="submit"
-                        className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
+                        className="w-full bg-slate-900 text-white py-2 rounded hover:bg-slate-800 transition shadow-lg shadow-slate-900/20"
                     >
                         Add Meal
                     </button>

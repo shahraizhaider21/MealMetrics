@@ -139,7 +139,7 @@ const Planner = () => {
 
                                     <button
                                         onClick={() => handleAddMeal(day)}
-                                        className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-400 hover:border-green-500 hover:text-green-500 transition-colors flex justify-center items-center gap-1 text-sm font-medium mt-2"
+                                        className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-400 hover:border-slate-900 hover:text-slate-900 transition-colors flex justify-center items-center gap-1 text-sm font-medium mt-2"
                                     >
                                         <Plus size={16} /> Add
                                     </button>

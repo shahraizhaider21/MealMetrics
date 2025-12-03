@@ -2,7 +2,6 @@ import { useEffect, useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import axios from 'axios';
 import { Printer, CheckSquare, Calendar } from 'lucide-react';
-import { ingredientDb } from '../data/ingredientDb';
 import PageTransition from '../components/PageTransition';
 import API_URL from '../api';
 
@@ -27,8 +26,10 @@ const ShoppingList = () => {
     const [upcomingMeals, setUpcomingMeals] = useState<DayGroup[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const [ingredientsMap, setIngredientsMap] = useState<Record<string, string[]>>({});
+
     useEffect(() => {
-        const fetchMeals = async () => {
+        const fetchMealsAndIngredients = async () => {
             if (!auth?.token) return;
 
             try {
@@ -61,21 +62,25 @@ const ShoppingList = () => {
                 })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
                 setUpcomingMeals(groupedArray);
+
+                // Fetch Ingredients from AI
+                if (futureMeals.length > 0) {
+                    const mealNames = Array.from(new Set(futureMeals.map(m => m.name)));
+                    const aiRes = await axios.post('http://localhost:5000/api/ai/ingredients', { meals: mealNames });
+
+                    // Expecting { "Meal Name": ["Ing 1", "Ing 2"] }
+                    setIngredientsMap(aiRes.data);
+                }
+
             } catch (err) {
-                console.error("Failed to fetch meals", err);
+                console.error("Failed to fetch data", err);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchMeals();
+        fetchMealsAndIngredients();
     }, [auth?.token]);
-
-    const getIngredients = (mealName: string): string[] => {
-        // Simple fuzzy match or direct lookup
-        const ingredients = ingredientDb[mealName] || ingredientDb[Object.keys(ingredientDb).find(k => mealName.toLowerCase().includes(k.toLowerCase())) || ''] || ['Generic Ingredients (Check Recipe)'];
-        return ingredients;
-    };
 
     const handlePrint = () => {
         window.print();
@@ -129,28 +134,47 @@ const ShoppingList = () => {
                                         {new Date(group.date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                                     </h2>
                                 </div>
-                                <div className="p-6 space-y-6">
+                                <div className="p-6 space-y-2">
                                     {group.meals.map((meal) => (
-                                        <div key={meal._id} className="border-b border-gray-100 last:border-0 pb-6 last:pb-0">
-                                            <h3 className="font-bold text-lg text-gray-800 mb-3">{meal.name}</h3>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                {getIngredients(meal.name).map((ingredient, idx) => (
-                                                    <label key={`${meal._id}-${idx}`} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors group">
+                                        <div key={meal._id} className="flex justify-between items-center">
+                                            <h3 className="font-medium text-gray-800">{meal.name}</h3>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+
+                        {/* AI Shopping List Per Meal */}
+                        {Object.keys(ingredientsMap).length > 0 && (
+                            <div className="space-y-6 mt-8">
+                                <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                                    <CheckSquare className="w-6 h-6 text-indigo-600" />
+                                    AI Suggested Ingredients
+                                </h2>
+                                {Object.entries(ingredientsMap).map(([mealName, ingredients]) => (
+                                    <div key={mealName} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden break-inside-avoid">
+                                        <div className="bg-indigo-50 px-6 py-3 border-b border-indigo-100">
+                                            <h3 className="font-semibold text-indigo-900">{mealName}</h3>
+                                        </div>
+                                        <div className="p-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                                {ingredients.map((ingredient, idx) => (
+                                                    <label key={idx} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors group">
                                                         <div className="relative flex items-center">
-                                                            <input type="checkbox" className="peer w-5 h-5 border-2 border-gray-300 rounded text-green-600 focus:ring-green-500 focus:ring-offset-0 transition-all checked:border-green-600" />
-                                                            <CheckSquare className="absolute w-5 h-5 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity scale-50 peer-checked:scale-100" size={14} />
+                                                            <input type="checkbox" className="peer w-4 h-4 border-2 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500 focus:ring-offset-0 transition-all checked:border-indigo-600" />
+                                                            <CheckSquare className="absolute w-4 h-4 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity scale-50 peer-checked:scale-100" size={12} />
                                                         </div>
-                                                        <span className="text-gray-600 group-hover:text-gray-900 peer-checked:text-gray-400 peer-checked:line-through transition-colors">
+                                                        <span className="text-gray-600 group-hover:text-gray-900 peer-checked:text-gray-400 peer-checked:line-through transition-colors text-sm">
                                                             {ingredient}
                                                         </span>
                                                     </label>
                                                 ))}
                                             </div>
                                         </div>
-                                    ))}
-                                </div>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
+                        )}
                     </div>
                 )}
             </div>

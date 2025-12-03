@@ -91,7 +91,7 @@ const WaterTracker = () => {
                         stroke="currentColor"
                         strokeWidth="10"
                         fill="transparent"
-                        className="text-slate-100"
+                        className="text-slate-200"
                     />
                     <motion.circle
                         initial={{ strokeDashoffset: circumference }}
@@ -105,7 +105,7 @@ const WaterTracker = () => {
                         fill="transparent"
                         strokeDasharray={circumference}
                         strokeLinecap="round"
-                        className="text-blue-500"
+                        className="text-blue-600"
                     />
                 </svg>
 
