@@ -66,7 +66,7 @@ const ShoppingList = () => {
                 // Fetch Ingredients from AI
                 if (futureMeals.length > 0) {
                     const mealNames = Array.from(new Set(futureMeals.map(m => m.name)));
-                    const aiRes = await axios.post('http://localhost:5000/api/ai/ingredients', { meals: mealNames });
+                    const aiRes = await axios.post(`${API_URL}/api/ai/ingredients`, { meals: mealNames });
 
                     // Expecting { "Meal Name": ["Ing 1", "Ing 2"] }
                     setIngredientsMap(aiRes.data);

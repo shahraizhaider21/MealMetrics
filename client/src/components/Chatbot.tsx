@@ -40,8 +40,8 @@ const Chatbot = () => {
             setMessages(prev => [...prev, { id: loadingId, text: "Thinking...", sender: 'bot' }]);
 
             // Call AI API
-            console.log(`🔹 Sending Chat Request to: http://localhost:5000/api/ai/chat`, { message: userMsg.text });
-            const res = await axios.post('http://localhost:5000/api/ai/chat', {
+            console.log(`🔹 Sending Chat Request to: ${API_URL}/api/ai/chat`, { message: userMsg.text });
+            const res = await axios.post(`${API_URL}/api/ai/chat`, {
                 message: userMsg.text,
                 stats: { note: "User is asking about nutrition." }
             });

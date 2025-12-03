@@ -33,7 +33,7 @@ const AddMealModal: React.FC<AddMealModalProps> = ({ isOpen, onClose, onMealAdde
         if (!formData.name) return;
         setIsAnalyzing(true);
         try {
-            const res = await axios.post('http://localhost:5000/api/ai/analyze', { mealName: formData.name });
+            const res = await axios.post(`${API_URL}/api/ai/analyze`, { mealName: formData.name });
             const { calories, price, protein, carbs, fat } = res.data;
             setFormData(prev => ({
                 ...prev,
